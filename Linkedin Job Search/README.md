@@ -1,3 +1,5 @@
+<img width="1919" height="1079" alt="Screenshot 2025-08-05 205202" src="https://github.com/user-attachments/assets/210e690a-6bf1-4ec7-ad41-c482b3364c02" />
+
 # 🔎 LinkedIn Job Search Automation Workflow
 
 Unlock smarter job searching with this **n8n workflow** — automate LinkedIn job searches and save results directly to Google Sheets!  
