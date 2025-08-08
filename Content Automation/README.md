@@ -1,3 +1,5 @@
+<img width="1919" height="1079" alt="Screenshot 2025-08-08 192109" src="https://github.com/user-attachments/assets/1f6a8227-69e3-49b9-81d1-220177c07fe8" />
+
 # ✨ Content Automation Workflow
 
 Boost your content creation process with this **n8n workflow** — automate the generation of engaging social media content and seamlessly manage it with Google Sheets and Trello! This workflow pulls client data, generates tailored content ideas using AI, and organizes them in your Trello backlog for easy tracking.
