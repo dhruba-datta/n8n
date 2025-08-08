@@ -1,3 +1,5 @@
+<img width="1919" height="1079" alt="Screenshot 2025-08-08 213845" src="https://github.com/user-attachments/assets/ed28102e-b3a8-4e3f-a9b4-a1403f799372" />
+
 # 💌 Brevo Email Marketing Automation Workflow
 
 Boost your email marketing campaigns with this **n8n workflow** — automate importing contacts from Google Sheets, adding them to Brevo, sending templated emails, tracking engagement, managing email credits, and cleaning up contacts efficiently.
