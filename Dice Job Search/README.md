@@ -1,3 +1,5 @@
+<img width="1919" height="1079" alt="Screenshot 2025-08-15 192805" src="https://github.com/user-attachments/assets/147f3992-048c-4707-a8e0-fa216765915f" />
+
 # 🎯 Dice Job Search Automation Workflow
 
 Automate **Dice.com** job searches for multiple states, capture only fresh postings, and store results directly in Google Sheets — with optional email alerts to your team.
