@@ -92,8 +92,8 @@ You will need to set up and select the following credentials in the respective n
 
 ## 🙋‍♂️ Author
 
-- **Dhruba Datta**
-  Email: [dhrubadattaanjan@gmail.com](mailto:dhrubadattaanjan@gmail.com)
+- **Dhruba Datta**  
+  Email: [dhrubadattaanjan@gmail.com](mailto:dhrubadattaanjan@gmail.com)  
   Website: [https://dhruba-datta.netlify.app/](https://dhruba-datta.netlify.app/)
 
 ## 🌟 Contribution & Support
