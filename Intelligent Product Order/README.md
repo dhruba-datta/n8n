@@ -1,3 +1,5 @@
+<img width="1512" height="949" alt="image" src="https://github.com/user-attachments/assets/ef8600d0-d527-456a-a061-acdebdf90f39" />
+
 # 📦 Intelligent Product Order Automation
 
 Streamline your order management with this **n8n workflow** — it syncs product catalogs, intelligently extracts order details from emails using AI, and automatically creates tasks in Monday.com for fulfillment.
