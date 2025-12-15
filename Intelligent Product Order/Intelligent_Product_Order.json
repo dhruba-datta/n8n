@@ -1,0 +1,655 @@
+{
+  "name": "Intelligent Product Order",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -192
+      ],
+      "id": "20915183-fc4f-4a04-b35f-15443e1872f1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urls = [\n  \"https://gist.githubusercontent.com/dhruba-datta/9a9cfb25cf2f7bdd26a954bd78b7f3fa/raw/42fd1e789cc72b410e0309ca46e6fb739d144321/products-page-1.json\",\n  \"https://gist.githubusercontent.com/dhruba-datta/753f24702b3c6dba232925c6abbffb88/raw/77af943d39f29a0f07f37613707c4ead0d1ec030/products-page-2.json\",\n  \"https://gist.githubusercontent.com/dhruba-datta/07b7295c0e7348b5637ee2492dd82462/raw/7915b1b7ffefeeedc2304f6620b121e11657f8b5/products-page-3.json\",\n  \"https://gist.githubusercontent.com/dhruba-datta/77feaa99ed0afa54214811ac84290695/raw/5b8323a1ff844f260a5ae6551b962e1af584c4cc/products-page-4.json\"\n];\n\nreturn urls.map(url => ({ json: { url } }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -192
+      ],
+      "id": "853c5e96-7a4a-4747-89b8-6c29468698a0",
+      "name": "A1 – Init Product API Pages"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        80,
+        -192
+      ],
+      "id": "805bf8c2-a389-4475-ad39-ca67133c387a",
+      "name": "A2 – Fetch Product Page"
+    },
+    {
+      "parameters": {
+        "jsCode": "let allProducts = [];\n\nfor (const item of items) {\n  if (item.json.data && Array.isArray(item.json.data)) {\n    allProducts = allProducts.concat(item.json.data);\n  }\n}\n\n// Return one item per product\nreturn allProducts.map(product => ({ json: product }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -192
+      ],
+      "id": "5db4f88b-d829-4e27-b295-5435d7636dc2",
+      "name": "A3 – Combine All Product Pages"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1x2QY9bpTAYrb2E59Opmhb6jJpnd3hlt8UG2oapujktc",
+          "mode": "list",
+          "cachedResultName": "Products",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x2QY9bpTAYrb2E59Opmhb6jJpnd3hlt8UG2oapujktc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x2QY9bpTAYrb2E59Opmhb6jJpnd3hlt8UG2oapujktc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.id }}",
+            "Name": "={{ $json.name }}",
+            "Price": "={{ $json.price }}",
+            "Category": "={{ $json.category }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        -192
+      ],
+      "id": "c64759c5-ff2d-42ff-9e9e-77d4ebf213fe",
+      "name": "A4 – Upsert Products to Google Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eAsaLEpRaVbiUbcN",
+          "name": "Dhruba"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Step 1 – Product Data Pipeline\n",
+        "height": 336,
+        "width": 1248,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "f108363b-f985-458f-967b-56acef37112c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "includeSpamTrash": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        224
+      ],
+      "id": "8751ae0b-d020-49ba-80b3-413918320e7a",
+      "name": "B1 – New Order Email",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rp4hdEAW3A3logOj",
+          "name": "Dhruba"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e23391e-d017-41c9-865f-d0847c76faf2",
+              "name": "subject",
+              "value": "={{$json.Subject || $json.subject || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "31be5cce-03f9-4f76-8022-0d259477301e",
+              "name": "from",
+              "value": "={{$json.From || $json.from || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "f83288f7-24f7-422c-b9bf-8e0b0c0fe68c",
+              "name": "email_text",
+              "value": "=Subject: {{$json.Subject || $json.subject || \"\"}}\\nFrom: {{$json.From || $json.from || \"\"}}\\n\\nBody:\\n{{$json.snippet || $json.text || $json.body || \"\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        224
+      ],
+      "id": "84b1e249-2e08-4092-95c8-225824dfe433",
+      "name": "B2 – Build Email Text"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are extracting order/inquiry details from an email.\n\nReturn ONLY valid JSON. No explanations. No markdown. No extra text.\n\nJSON schema:\n{\n  \"intent\": \"order\" | \"inquiry\" | \"issue\" | \"unknown\",\n  \"product_id\": number | null,\n  \"product_name\": string | null,\n  \"quantity\": number | null,\n  \"requested_delivery_date\": \"YYYY-MM-DD\" | null,\n  \"customer_name\": string | null,\n  \"address\": string | null,\n  \"phone\": string | null,\n  \"priority\": \"low\" | \"normal\" | \"high\",\n  \"notes\": string | null\n}\n\nRules:\n- If the email contains a product ID, set product_id and still try to set product_name if present.\n- If the email contains a product name but no ID, set product_name.\n- If quantity is missing, set quantity to null.\n- If delivery date is written in words, convert to YYYY-MM-DD. If year is missing, assume 2025.\n- priority is \"high\" if subject/body includes urgent/asap/immediately, otherwise \"normal\".\n- notes should contain any extra request not captured above.\n\nEMAIL:\n{{ $json.email_text }}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        32,
+        224
+      ],
+      "id": "388ec754-6682-4db2-9343-8fb3f19f31df",
+      "name": "B3 – AI Extract Order JSON",
+      "credentials": {
+        "openAiApi": {
+          "id": "g9ap4RILVWw7sGux",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// The OpenAI node returns the JSON as a string in output[0].content[0].text (in your screenshot it's under: output[0].content[0].text)\nconst raw = $json.output?.[0]?.content?.[0]?.text;\n\nif (!raw) {\n  return [{ json: { parse_error: true, reason: \"Missing AI text output\" } }];\n}\n\ntry {\n  const parsed = JSON.parse(raw);\n  return [{ json: parsed }];\n} catch (e) {\n  return [{ json: { parse_error: true, reason: e.message, raw_text: raw } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        224
+      ],
+      "id": "4d0f6cf6-940c-4e3b-a94d-5b6c18cea0c4",
+      "name": "B4 – Parse AI JSON"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1x2QY9bpTAYrb2E59Opmhb6jJpnd3hlt8UG2oapujktc",
+          "mode": "list",
+          "cachedResultName": "Products",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x2QY9bpTAYrb2E59Opmhb6jJpnd3hlt8UG2oapujktc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x2QY9bpTAYrb2E59Opmhb6jJpnd3hlt8UG2oapujktc/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $json.product_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        480
+      ],
+      "id": "ef34f855-8237-4e14-853d-f058ce8d6277",
+      "name": "B5 – Lookup Product by ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eAsaLEpRaVbiUbcN",
+          "name": "Dhruba"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Order details are still available from previous nodes via $items(\"B4 – Parse AI JSON\", 0)\nconst order = $items(\"B4 – Parse AI JSON\", 0)[0].json;\n\n// Product details come from this node's input/output\nconst productRow = items[0]?.json || {};\n\n// Normalize product fields (your sheet has capitalized column names)\nconst product = {\n  id: productRow.ID ?? null,\n  name: productRow.Name ?? null,\n  price: productRow.Price ?? null,\n  category: productRow.Category ?? null,\n};\n\n// Build a clean combined object\nconst combined = {\n  intent: order.intent,\n  customer_name: order.customer_name,\n  phone: order.phone,\n  address: order.address,\n  requested_delivery_date: order.requested_delivery_date,\n  quantity: order.quantity,\n  priority: order.priority,\n  notes: order.notes,\n  product,\n};\n\n// Build a human-friendly task text for Monday\nconst task_description =\n`Order Type: ${combined.intent}\nCustomer: ${combined.customer_name || \"N/A\"}\nPhone: ${combined.phone || \"N/A\"}\nAddress: ${combined.address || \"N/A\"}\n\nProduct: ${product.name || \"N/A\"} (ID: ${product.id || \"N/A\"})\nCategory: ${product.category || \"N/A\"}\nUnit Price: ${product.price || \"N/A\"}\nQuantity: ${combined.quantity || \"N/A\"}\n\nRequested Delivery Date: ${combined.requested_delivery_date || \"N/A\"}\nPriority: ${combined.priority || \"normal\"}\n\nNotes: ${combined.notes || \"\"}`;\n\n// Output what we will send to Monday\nreturn [{\n  json: {\n    ...combined,\n    task_title: `Order: ${product.name || order.product_name || \"Unknown Product\"} (Qty: ${combined.quantity || \"N/A\"})`,\n    task_description\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        432
+      ],
+      "id": "a5a7a6a9-62ba-44ff-b8e3-eb5531f056dd",
+      "name": "B6 – Build Monday Task Payload"
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "operation": "addUpdate",
+        "itemId": "={{ $json.id }}",
+        "value": "={{ $('B6 – Build Monday Task Payload').item.json.task_description }}"
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        592,
+        432
+      ],
+      "id": "004fd3a7-e38d-4213-a451-53d5ebc2f606",
+      "name": "B8 – Add Order Details Update",
+      "credentials": {
+        "mondayComApi": {
+          "id": "7eXmQYkaychoYoqq",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "boardItem",
+        "boardId": "5025595940",
+        "groupId": "topics",
+        "name": "={{$json.task_title}}",
+        "additionalFields": {
+          "columnValues": "="
+        }
+      },
+      "type": "n8n-nodes-base.mondayCom",
+      "typeVersion": 1,
+      "position": [
+        384,
+        432
+      ],
+      "id": "57b51b7e-5139-4be4-a188-eb5d303818d3",
+      "name": "B7 – Create Order Item",
+      "credentials": {
+        "mondayComApi": {
+          "id": "7eXmQYkaychoYoqq",
+          "name": "Monday.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Step 2 – Email → AI → Structured JSON → Deterministic logic",
+        "height": 592,
+        "width": 1264,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "a1b47d38-f6e5-4b44-b2a0-7ad93f708f75",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fcc778b4-e5cf-4cd5-b12a-a230d12f76e9",
+              "leftValue": "={{ $json.intent }}",
+              "rightValue": "order",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        224
+      ],
+      "id": "680789d2-1e75-4d88-9ebd-699d8e52a888",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf220a96-bd63-4176-ba03-5965d31717e6",
+              "leftValue": "={{ $items().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        480
+      ],
+      "id": "71f67506-6671-4fb0-9218-fb0b29b6745a",
+      "name": "If1"
+    }
+  ],
+  "pinData": {
+    "B1 – New Order Email": [
+      {
+        "json": {
+          "id": "19b21939fb2571c4",
+          "threadId": "19b21939fb2571c4",
+          "snippet": "Hello Team, I&#39;d like to place an order for 3 units of the Red T-Shirt (Product ID: 42). Please ensure delivery by October 10, 2025. Customer: John Doe Address: 45 Park Street, Dhaka Phone: +",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 8784,
+          "historyId": "212591",
+          "internalDate": "1765794843000",
+          "labels": [
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "IMPORTANT",
+              "name": "IMPORTANT"
+            },
+            {
+              "id": "CATEGORY_PERSONAL",
+              "name": "CATEGORY_PERSONAL"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "From": "Dhruba Datta <dhrubadattaanjan@gmail.com>",
+          "Subject": "Urgent Order Request – Red T-Shirt (Product ID 42)",
+          "To": "dhruba@socialengagementgroup.com"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "A1 – Init Product API Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A1 – Init Product API Pages": {
+      "main": [
+        [
+          {
+            "node": "A2 – Fetch Product Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A2 – Fetch Product Page": {
+      "main": [
+        [
+          {
+            "node": "A3 – Combine All Product Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A3 – Combine All Product Pages": {
+      "main": [
+        [
+          {
+            "node": "A4 – Upsert Products to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B1 – New Order Email": {
+      "main": [
+        [
+          {
+            "node": "B2 – Build Email Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B2 – Build Email Text": {
+      "main": [
+        [
+          {
+            "node": "B3 – AI Extract Order JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B3 – AI Extract Order JSON": {
+      "main": [
+        [
+          {
+            "node": "B4 – Parse AI JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B4 – Parse AI JSON": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B5 – Lookup Product by ID": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B6 – Build Monday Task Payload": {
+      "main": [
+        [
+          {
+            "node": "B7 – Create Order Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B7 – Create Order Item": {
+      "main": [
+        [
+          {
+            "node": "B8 – Add Order Details Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "B5 – Lookup Product by ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "B6 – Build Monday Task Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "550468e0-3eec-483d-a642-c170371fbeb5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6bb5339e67011e36cf93cf54a8bca6b7e3857fbcd93e9f5eeac8f6e87022da02"
+  },
+  "id": "s77yIvxemOagMdry",
+  "tags": []
+}
