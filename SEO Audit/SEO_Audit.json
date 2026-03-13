@@ -1,0 +1,390 @@
+{
+  "name": "SEG - SEO Audit",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "96175799-8858-4524-bb52-549b509866c1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "76f5be72-332a-4df1-9f1d-159e5587a4cb",
+      "name": "Webhook",
+      "webhookId": "96175799-8858-4524-bb52-549b509866c1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a4186ee5-cd94-4840-9b7d-56b4de4eb414",
+              "name": "query.url",
+              "value": "={{ $json.body.url }}",
+              "type": "string"
+            },
+            {
+              "id": "40971a9a-7e9f-4b56-8e4d-1e0d92df0689",
+              "name": "query.email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "7ed066c3-10b8-465b-80c5-c89ef1f77c4c",
+              "name": "query.name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "f4a32e81-38d6-44bf-9153-28fd253b415b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vC0WhF64We5ZhXVenVLpByZZ8yWsvD7ynLwJci7a80s",
+          "mode": "list",
+          "cachedResultName": "Website Audit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vC0WhF64We5ZhXVenVLpByZZ8yWsvD7ynLwJci7a80s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vC0WhF64We5ZhXVenVLpByZZ8yWsvD7ynLwJci7a80s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.query.name }}",
+            "URL": "={{ $json.query.url }}",
+            "Email": "={{ $json.query.email }}",
+            "Date": "={{ $now.toFormat('dd/MM/yyyy') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b33a1c88-5ce1-47b1-ad49-e3a5c76adabb",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "J9qVnEJx1XzWtg7p",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.URL }}"
+            },
+            {
+              "name": "category",
+              "value": "performance"
+            },
+            {
+              "name": "category",
+              "value": "seo"
+            },
+            {
+              "name": "strategy",
+              "value": "mobile"
+            },
+            {
+              "name": "key",
+              "value": "AIzaSyBqhaIDvs1T5jeXwbVZjassgKMaNgPK1eo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "4eee0502-99e5-4b34-9f48-7b0a3fa56357",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nconst lighthouse = res.lighthouseResult || {};\nconst categories = lighthouse.categories || {};\nconst audits = lighthouse.audits || {};\n\nreturn [\n  {\n    json: {\n      url: res.id || null,\n      performance: categories.performance?.score != null\n        ? Math.round(categories.performance.score * 100)\n        : null,\n      load_time: audits[\"speed-index\"]?.displayValue || null,\n      first_contentful_paint: audits[\"first-contentful-paint\"]?.displayValue || null,\n      total_blocking_time: audits[\"total-blocking-time\"]?.displayValue || null,\n      cumulative_layout_shift: audits[\"cumulative-layout-shift\"]?.displayValue || null,\n      is_mobile_friendly: audits[\"viewport-insight\"]?.score === 1 ? \"Yes\" : \"No\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "ee7a1f72-4809-4a00-a7e2-3a3401240ee1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a senior website performance consultant working for a digital marketing agency.\n\nYour job is to quickly analyze the provided website performance metrics and generate a short audit message that can be sent to a potential client.\n\nThe tone must be:\n- professional\n- helpful\n- short\n- persuasive\n\nDo NOT produce a long report.\n\nYour goal is to highlight the most important problems and encourage the website owner to fix them with our agency.\n\nReturn the result in this JSON format only:\n\n{\n  \"site_score_summary\": \"\",\n  \"main_issues\": [\n    \"\",\n    \"\",\n    \"\"\n  ],\n  \"recommended_fixes\": [\n    \"\",\n    \"\",\n    \"\"\n  ],\n  \"impact_if_fixed\": \"\",\n  \"agency_cta\": \"\"\n}\n\nRules:\n- site_score_summary: exactly 1 sentence\n- site_score_summary MUST include the numeric performance score\n- site_score_summary MUST describe the website condition based on the score\n- site_score_summary MUST NOT include the website URL\n- site_score_summary MUST NOT include markdown, hyperlinks, or domain names\n- main_issues: EXACTLY 3 short bullet points\n- recommended_fixes: EXACTLY 3 short fixes\n- impact_if_fixed: explain business impact in 1 short sentence\n- agency_cta: strong but friendly call to action from a digital marketing agency in 1 short sentence\n\nWebsite audit data:\nURL: {{$json[\"url\"]}}\nPerformance Score: {{$json[\"performance\"]}}\nLoad Time: {{$json[\"load_time\"]}}\nFirst Contentful Paint: {{$json[\"first_contentful_paint\"]}}\nTotal Blocking Time: {{$json[\"total_blocking_time\"]}}\nCumulative Layout Shift: {{$json[\"cumulative_layout_shift\"]}}\nMobile Friendly: {{$json[\"is_mobile_friendly\"]}}\n\nIMPORTANT OUTPUT RULES\n- main_issues MUST contain exactly 3 items.\n- recommended_fixes MUST contain exactly 3 items.\n- If fewer than 3 issues exist, infer additional realistic issues from the metrics.\n- Never return fewer than 3 items.\n- Never return more than 3 items.\n- Each item must be one short sentence.\n- Do not repeat the URL inside any field except where it is already separately provided outside the JSON.\n- site_score_summary must start with: \"Your website performance score is\""
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "308f056f-9d8f-4fc8-a0e4-b47bd8c89372",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "QSZptR9WlBJE5ZiL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Append row in sheet').item.json.Email }}",
+        "subject": "Performance review of your website",
+        "message": "=<div style=\"margin:0; padding:0; font-family:Arial, Helvetica, sans-serif; color:#111827;\">\n  <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"width:100%; border-collapse:collapse; margin:0; padding:0;\">\n    <tr>\n      <td align=\"center\" style=\"margin:0; padding:0;\">\n        <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"max-width:680px; width:100%; border-collapse:separate; border-spacing:0; background-color:#ffffff; border-radius:14px; overflow:hidden; border:1px solid #e5e7eb; margin:0;\">\n          \n          <tr>\n            <td style=\"padding:40px 32px 28px 32px; background-color:#975554; border-radius:14px 14px 0 0;\" align=\"center\">\n              <div style=\"font-size:24px; line-height:32px; font-weight:700; color:#ffffff;\">\n                Social Engagement Group\n              </div>\n              <div style=\"font-size:14px; line-height:22px; color:#f3e8e6; margin-top:6px;\">\n                Website Performance Audit Summary\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:30px 32px 10px 32px;\">\n              <div style=\"font-size:16px; line-height:26px; color:#111827;\">\n                Hi {{ $('Edit Fields').item.json.query.name }},\n              </div>\n              <div style=\"font-size:16px; line-height:26px; color:#111827; margin-top:12px;\">\n                We ran a quick performance review of your website and found a few areas that may be slowing things down and affecting user experience.\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:10px 32px;\">\n              <div style=\"background-color:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; padding:20px;\">\n                <div style=\"font-size:13px; line-height:20px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;\">\n                  Audit Summary\n                </div>\n                <div style=\"font-size:18px; line-height:30px; font-weight:700; color:#111827; margin-bottom:8px;\">\n                  {{$json[\"site_score_summary\"]}}\n                </div>\n                <div style=\"font-size:14px; line-height:24px; color:#475569;\">\n                  Website reviewed:\n                  <a href=\"{{ $('Edit Fields').item.json.query.url }}\" style=\"color:#975554; text-decoration:none;\">\n                    {{ $('Edit Fields').item.json.query.url }}\n                  </a>\n                </div>\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:20px 32px 10px 32px;\">\n              <div style=\"font-size:18px; line-height:28px; font-weight:700; color:#111827; margin-bottom:12px;\">\n                Key Issues Identified\n              </div>\n\n              <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n                <tr>\n                  <td style=\"padding:0 0 10px 0;\">\n                    <div style=\"background-color:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:14px 16px; font-size:15px; line-height:24px; color:#9a3412;\">\n                      1. {{$json[\"main_issues\"][0]}}\n                    </div>\n                  </td>\n                </tr>\n                <tr>\n                  <td style=\"padding:0 0 10px 0;\">\n                    <div style=\"background-color:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:14px 16px; font-size:15px; line-height:24px; color:#9a3412;\">\n                      2. {{$json[\"main_issues\"][1]}}\n                    </div>\n                  </td>\n                </tr>\n                <tr>\n                  <td style=\"padding:0;\">\n                    <div style=\"background-color:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:14px 16px; font-size:15px; line-height:24px; color:#9a3412;\">\n                      3. {{$json[\"main_issues\"][2]}}\n                    </div>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:24px 32px 10px 32px;\">\n              <div style=\"font-size:18px; line-height:28px; font-weight:700; color:#111827; margin-bottom:12px;\">\n                Recommended Fixes\n              </div>\n\n              <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n                <tr>\n                  <td style=\"padding:0 0 10px 0;\">\n                    <div style=\"background-color:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px; font-size:15px; line-height:24px; color:#1d4ed8;\">\n                      1. {{$json[\"recommended_fixes\"][0]}}\n                    </div>\n                  </td>\n                </tr>\n                <tr>\n                  <td style=\"padding:0 0 10px 0;\">\n                    <div style=\"background-color:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px; font-size:15px; line-height:24px; color:#1d4ed8;\">\n                      2. {{$json[\"recommended_fixes\"][1]}}\n                    </div>\n                  </td>\n                </tr>\n                <tr>\n                  <td style=\"padding:0;\">\n                    <div style=\"background-color:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px; font-size:15px; line-height:24px; color:#1d4ed8;\">\n                      3. {{$json[\"recommended_fixes\"][2]}}\n                    </div>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:24px 32px 10px 32px;\">\n              <div style=\"background-color:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:18px 20px;\">\n                <div style=\"font-size:16px; line-height:26px; font-weight:700; color:#166534; margin-bottom:8px;\">\n                  Why This Matters\n                </div>\n                <div style=\"font-size:15px; line-height:25px; color:#166534;\">\n                  {{$json[\"impact_if_fixed\"]}}\n                </div>\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:28px 32px 10px 32px;\" align=\"center\">\n              <div style=\"font-size:16px; line-height:26px; color:#111827; margin-bottom:18px;\">\n                {{$json[\"agency_cta\"]}}\n              </div>\n              <a\n                href=\"https://calendly.com/itseg/segmeet\"\n                target=\"_blank\"\n                style=\"display:inline-block; background-color:#975554; color:#ffffff; text-decoration:none; font-size:16px; font-weight:700; padding:14px 28px; border-radius:10px;\"\n              >\n                Book a Call\n              </a>\n            </td>\n          </tr>\n\n         <tr>\n  <td style=\"padding:30px 32px 32px 32px;\" align=\"center\">\n    <div style=\"font-size:14px; line-height:24px; color:#475569;\">\n      Social Engagement Group\n    </div>\n    <div style=\"font-size:14px; line-height:24px; color:#475569;\">\n      <a href=\"https://www.socialengagementgroup.com/\" style=\"color:#975554; text-decoration:none;\">\n        www.socialengagementgroup.com\n      </a>\n    </div>\n    <div style=\"font-size:14px; line-height:24px; color:#475569; padding-top:10px;\">\n      <a href=\"https://www.instagram.com/socialengagementgroup\" style=\"color:#975554; text-decoration:none; margin:0 8px;\">\n        Instagram\n      </a>\n      <span style=\"color:#cbd5e1;\">|</span>\n      <a href=\"https://www.linkedin.com/company/social-engagement-group\" style=\"color:#975554; text-decoration:none; margin:0 8px;\">\n        LinkedIn\n      </a>\n      <span style=\"color:#cbd5e1;\">|</span>\n      <a href=\"https://www.facebook.com/seg.socialengagementgroup/\" style=\"color:#975554; text-decoration:none; margin:0 8px;\">\n        Facebook\n      </a>\n    </div>\n  </td>\n</tr>\n\n        </table>\n      </td>\n    </tr>\n  </table>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Social Engagement Group"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        0
+      ],
+      "id": "78123f76-87b6-4347-b625-5374d77685a9",
+      "name": "Send a message",
+      "webhookId": "f4c1c538-3b81-4d3c-8ba7-2de88aa1d19a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NxZ3MKJMf8UO0f6f",
+          "name": "AI Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output[0].content[0].text;\nconst parsed = JSON.parse(raw);\n\nreturn [\n  {\n    json: {\n      ...parsed\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "57dfac3a-c6f8-4068-9180-a45675c0e310",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.socialengagementgroup.com",
+            "user-agent": "node",
+            "content-length": "102",
+            "accept": "application/json",
+            "accept-encoding": "br, gzip, deflate",
+            "accept-language": "*",
+            "content-type": "application/json",
+            "sec-fetch-mode": "cors",
+            "via": "1.1 Caddy",
+            "x-forwarded-for": "103.225.94.120",
+            "x-forwarded-host": "n8n.socialengagementgroup.com",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "url": "https://dhruba-datta.netlify.app/",
+            "name": "Dhruba Datta",
+            "email": "dhrubadattaanjan@gmail.com"
+          },
+          "webhookUrl": "https://n8n.socialengagementgroup.com/webhook/96175799-8858-4524-bb52-549b509866c1",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7cbe4104-e17d-4cb5-a2eb-f5d58130420e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5390913f54f2b3b8c20ba2bc12d5d86923da56b51cae8a83441ce26684a7e6a"
+  },
+  "id": "2gHmLP4NdiiwnEexO3DF0",
+  "tags": []
+}

@@ -1,0 +1,735 @@
+{
+  "name": "MFC - Form Submission",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4",
+          "mode": "list",
+          "cachedResultName": "MFC Website Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        128,
+        848
+      ],
+      "id": "fc8d938e-65a3-4b21-b10a-fe0502689b90",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "usoJzeVQeZQIDIkM",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "spaceId": "spaces/AAQAvyWdHlA",
+        "messageUi": {
+          "text": "=Website Form Submission ({{ $('Code in JavaScript1').item.json['Entry Id'] }}: {{ $('Code in JavaScript1').item.json['AI Status'].toUpperCase() }})\n\n{{ $('Code in JavaScript1').item.json['First Name'] }} {{ $('Code in JavaScript1').item.json['Last Name'] }}\nEmail: {{ $('Code in JavaScript1').item.json['Email'] }}\nPhone: {{ $('Code in JavaScript1').item.json['Phone'] }}\nZip: {{ $('Code in JavaScript1').item.json['Zip'] }}\nService: {{ $('Code in JavaScript1').item.json['Service'] }}\nPage: {{ $('Code in JavaScript1').item.json['Page Name'] }} ({{ $('Code in JavaScript1').item.json['Page url'] ? $('Code in JavaScript1').item.json['Page url'] : 'NA' }})\n\nMessage:\n{{ $('Code in JavaScript1').item.json['Message'] }}"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleChat",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        944
+      ],
+      "id": "e32003a3-5212-419f-af90-2f2f431f03f6",
+      "name": "Google Chat",
+      "webhookId": "bda0c0f8-9bc8-4553-a455-9179468637f2",
+      "credentials": {
+        "googleApi": {
+          "id": "b1BRRFaxjGTpr8CR",
+          "name": "AI Chat"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5.2-pro",
+          "mode": "list",
+          "cachedResultName": "GPT-5.2-PRO"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a strict intake triage classifier for a law firm website contact form.\n\nGoal:\nClassify each submission as one of:\n- \"Lead\" (potential client seeking legal help)\n- \"Spam\" (includes marketing, sales outreach, scams, bots, nonsense, irrelevant)\n- \"Testing\" (internal tests, placeholders, obvious test data)\n\nImportant rules:\n- ALL marketing/vendor/recruiting/SEO outreach MUST be classified as \"Spam\".\n- Output MUST be valid JSON only.\n- Output MUST contain ONLY the fields listed in the Output Schema below (no extra keys).\n\nClassification rules:\n1) Lead:\n   - Message describes a real incident, injury, legal dispute, damages, timeline, or explicitly asks for a lawyer.\n   - If unclear but plausibly legal help, choose \"Lead\" and keep Message as-is.\n\n2) Spam:\n   - Includes marketing/outreach: SEO, backlinks, guest posts, web dev, ads, PPC, lead gen, partnerships, recruiting, promos.\n   - Also includes scams, phishing, impersonation, suspicious links, irrelevant content, bot-like submissions, gibberish.\n   - If message is empty, “[object Object]”, gibberish, only a link, or meaningless text, classify as \"Spam\".\n\n3) Testing:\n   - Placeholder names like “Test”, “asdf”, “demo”, “sample”.\n   - Repeated digits/letters, obvious dummy phone numbers, dummy emails, random strings.\n   - Any submission that looks intentionally fake for testing.\n\nPage Name extraction:\n- Use the input field \"Page url\".\n- If Page url is missing/blank/null -> Page Name = \"NA\"\n- If Page url is homepage (no path or \"/\") -> Page Name = \"Home\"\n- If Page url has a path (example: https://mfclaw.com/contact-us/?...) -> Page Name = Title Case of FIRST path segment:\n  - Take only the first segment after the domain\n  - Replace \"-\" and \"_\" with spaces\n  - Title Case it (contact-us -> Contact Us)\n  - Ignore query parameters\n\nAI Status:\n- Set \"AI Status\" equal to the classification value exactly: \"Lead\" or \"Spam\" or \"Testing\".\n\nOutput Schema:\nReturn ONLY a single JSON object with EXACTLY these keys and in this same naming:\n{\n  \"First Name\": \"\",\n  \"Last Name\": \"\",\n  \"Email\": \"\",\n  \"Phone\": \"\",\n  \"Zip\": \"\",\n  \"Service\": \"\",\n  \"Message\": \"\",\n  \"Entry Id\": \"\",\n  \"Page url\": \"\",\n  \"Page Name\": \"\",\n  \"Date\": \"\",\n  \"AI Status\": \"\"\n}\n\nField mapping rules:\n- Populate fields using the submission input as-is.\n- Do NOT invent values. If a field is missing in the input, return an empty string \"\" (except Page Name which can be \"Home\" or \"NA\" per rules).\n- Keep \"Message\" exactly as provided (even if empty).\n\n"
+            },
+            {
+              "content": "=Task:\nTransform and classify this single form submission:\n\n{{ JSON.stringify($json) }}\n\nReturn JSON only."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        848
+      ],
+      "id": "067aa8a3-a220-4125-9ddc-36518b1cc4c2",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "QSZptR9WlBJE5ZiL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "mfc@mfclaw.com, sa@mfclaw.com, fmr@mfclaw.com, rt1@mfclaw.com, ldeleon@mfclaw.com, ba@mfclaw.com",
+        "subject": "=Contact Form [Website] - Inquiry",
+        "message": "=<div style=\"font-family: Arial, sans-serif; line-height: 1.5; color: #111; background: #f6f7f9; padding: 18px;\">\n  <div style=\"max-width: 720px; margin: 0 auto; background: #ffffff; border: 1px solid #e6e6e6; border-radius: 10px; overflow: hidden;\">\n\n    <div style=\"padding: 16px;\">\n      <table style=\"border-collapse: collapse; width: 100%;\">\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; width: 190px; background: #f2f2f2;\"><b>First Name</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">{{ $('Code in JavaScript1').item.json['First Name'] }}</td>\n        </tr>\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2;\"><b>Last Name</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">{{ $('Code in JavaScript1').item.json['Last Name'] }}</td>\n        </tr>\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2;\"><b>Email ({{ $('HTTP Request1').item.json.result }})</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">\n            <a style=\"color:#111; text-decoration: underline;\" href=\"mailto:{{ $('Code in JavaScript1').item.json.Email }}\">{{ $('Code in JavaScript1').item.json.Email }}</a>\n          </td>\n        </tr>\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2;\"><b>Phone</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">\n            <a style=\"color:#111; text-decoration: underline;\" href=\"tel:{{ $('Code in JavaScript1').item.json.Phone }}\">{{ $('Code in JavaScript1').item.json.Phone }}</a>\n          </td>\n        </tr>\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2;\"><b>Zip Code</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">{{ $('Code in JavaScript1').item.json.Zip }}</td>\n        </tr>\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2;\"><b>Case Type</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">{{ $('Code in JavaScript1').item.json.Service }}</td>\n        </tr>\n\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2; vertical-align: top;\"><b>Message</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; white-space: pre-wrap;\">{{ $('Code in JavaScript1').item.json.Message }}</td>\n        </tr>\n\n        <tr>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6; background: #f2f2f2;\"><b>Request From Page</b></td>\n          <td style=\"padding: 10px 12px; border: 1px solid #e6e6e6;\">{{ $('Code in JavaScript1').item.json['Page Name'] }}</td>\n        </tr>\n      </table>\n\n      <div style=\"margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; color: #666; font-size: 12px;\">\n        <b><i>This is an automated notification generated by the website when a contact form is submitted.</i></b>\n      </div>\n    </div>\n\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Rahee Khan"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1824,
+        752
+      ],
+      "id": "68294d4f-d725-4617-a48b-aef6683ce48d",
+      "name": "Send a message",
+      "webhookId": "2cb21f0d-cfd6-4616-84b3-d81e503662fc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jDtr6DS11caFj7Jt",
+          "name": "Rahee's Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4",
+          "mode": "list",
+          "cachedResultName": "MFC Website Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VM84j3NH6YQZRRVbrU7qAhTxruVqNPlROmxVbqNmQ2c/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Entry Id": "={{ $('Update row in sheet6').item.json['Entry Id'] }}",
+            "Email Status": "=Email Sent at {{ $now.toFormat('dd/MM/yyyy') }}",
+            "Verification": "=Email is {{ $('HTTP Request1').item.json.result }}"
+          },
+          "matchingColumns": [
+            "Entry Id"
+          ],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Zip",
+              "displayName": "Zip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Entry Id",
+              "displayName": "Entry Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Page url",
+              "displayName": "Page url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Page Name",
+              "displayName": "Page Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Status",
+              "displayName": "AI Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Verification",
+              "displayName": "Verification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Status",
+              "displayName": "Email Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2048,
+        752
+      ],
+      "id": "063b1206-de7e-4c2e-80dd-364256c87a44",
+      "name": "Update row in sheet4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "J9qVnEJx1XzWtg7p",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This Code node expects you may receive MULTIPLE incoming items:\n// - One item that contains the original form fields (First Name, Email, etc.)\n// - One item that contains the ChatGPT \"output\" wrapper with the JSON text\n//\n// Update: If Date is empty, set it to today's date (YYYY-MM-DD).\n\nconst items = $input.all().map(i => i.json);\n\n// --- Helpers ---\nconst hasSubmissionShape = (obj) => {\n  if (!obj || typeof obj !== \"object\") return false;\n  const keys = [\"First Name\", \"Last Name\", \"Email\", \"Phone\", \"Zip\", \"Service\", \"Message\", \"Page url\"];\n  let count = 0;\n  for (const k of keys) if (k in obj) count++;\n  return count >= 3;\n};\n\nconst extractAiText = (obj) => {\n  return obj?.output?.[0]?.content?.[0]?.text ?? null;\n};\n\nfunction computePageName(url) {\n  const u = (url || \"\").toString().trim();\n  if (!u) return \"NA\";\n  try {\n    const parsed = new URL(u);\n    const path = (parsed.pathname || \"\").replace(/\\/+$/, \"\");\n    if (!path) return \"Home\";\n    const seg = path.split(\"/\").filter(Boolean)[0];\n    if (!seg) return \"Home\";\n    return seg\n      .replace(/[-_]+/g, \" \")\n      .replace(/\\b\\w/g, (c) => c.toUpperCase());\n  } catch (e) {\n    if (u === \"/\" || u.endsWith(\"mfclaw.com\") || u.endsWith(\"mfclaw.com/\")) return \"Home\";\n    return \"NA\";\n  }\n}\n\nfunction splitName(full) {\n  const s = (full || \"\").toString().trim();\n  if (!s) return { first: \"\", last: \"\" };\n  const parts = s.split(/\\s+/);\n  return {\n    first: parts[0] || \"\",\n    last: parts.length > 1 ? parts.slice(1).join(\" \") : \"\"\n  };\n}\n\nfunction todayISO() {\n  // n8n runs in server timezone; this yields YYYY-MM-DD\n  const d = new Date();\n  return d.toISOString().slice(0, 10);\n}\n\n// --- 1) Find submission + AI text from ANY incoming item ---\nlet submission = {};\nlet aiText = null;\n\nfor (const obj of items) {\n  if (!aiText) {\n    const maybeText = extractAiText(obj);\n    if (maybeText) aiText = maybeText;\n  }\n  if (!Object.keys(submission).length && hasSubmissionShape(obj)) {\n    submission = obj;\n  }\n}\n\n// If the submission was nested under \"submission\", handle that too\nif (!Object.keys(submission).length) {\n  for (const obj of items) {\n    const nested = obj?.submission;\n    if (hasSubmissionShape(nested)) {\n      submission = nested;\n      break;\n    }\n    if (Array.isArray(nested) && hasSubmissionShape(nested[0])) {\n      submission = nested[0];\n      break;\n    }\n  }\n}\n\n// --- 2) Parse triage JSON (your model now outputs the final sheet object) ---\nlet triage = null;\ntry {\n  triage = aiText ? JSON.parse(aiText) : null;\n} catch (e) {\n  triage = null;\n}\n\n// Fallback if parsing fails\nif (!triage || typeof triage !== \"object\") {\n  triage = {};\n}\n\n// --- 3) Pull values (prefer triage since it already outputs your fields) ---\nconst outFirstName = triage[\"First Name\"] ?? submission[\"First Name\"] ?? \"\";\nconst outLastName  = triage[\"Last Name\"] ?? submission[\"Last Name\"] ?? \"\";\nconst outEmail     = triage[\"Email\"] ?? submission[\"Email\"] ?? \"\";\nconst outPhone     = triage[\"Phone\"] ?? submission[\"Phone\"] ?? \"\";\nconst outZip       = triage[\"Zip\"] ?? submission[\"Zip\"] ?? \"\";\nconst outService   = triage[\"Service\"] ?? submission[\"Service\"] ?? \"\";\nconst outMessage   = triage[\"Message\"] ?? submission[\"Message\"] ?? \"\";\nconst outEntryId   = triage[\"Entry Id\"] ?? submission[\"Entry Id\"] ?? \"\";\n\nconst outPageUrl   = triage[\"Page url\"] ?? submission[\"Page url\"] ?? submission[\"Page URL\"] ?? \"\";\nconst outPageName  =\n  triage[\"Page Name\"] ??\n  submission[\"Page Name\"] ??\n  computePageName(outPageUrl);\n\nlet outDate = triage[\"Date\"] ?? submission[\"Date\"] ?? \"\";\noutDate = String(outDate || \"\").trim() ? outDate : todayISO();\n\nconst outAIStatus  = triage[\"AI Status\"] ?? submission[\"AI Status\"] ?? \"\";\nconst outEmailStat = triage[\"Email Status\"] ?? submission[\"Email Status\"] ?? \"\";\n\n// --- 4) Return exact columns ---\nreturn [\n  {\n    json: {\n      \"First Name\": outFirstName,\n      \"Last Name\": outLastName,\n      \"Email\": outEmail,\n      \"Phone\": outPhone,\n      \"Zip\": outZip,\n      \"Service\": outService,\n      \"Message\": outMessage,\n      \"Entry Id\": outEntryId,\n      \"Page url\": outPageUrl,\n      \"Page Name\": outPageName,\n      \"Date\": outDate,\n      \"AI Status\": outAIStatus,\n      \"Email Status\": outEmailStat\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        848
+      ],
+      "id": "8223446c-5bec-4339-84db-d407f12f988d",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4019be9b-4371-4d5c-89db-940e00e1bbff",
+              "leftValue": "={{ $json['AI Status'] }}",
+              "rightValue": "Lead",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1152,
+        848
+      ],
+      "id": "6daff0e7-8db7-4a80-9dce-90a55060a92f",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.neverbounce.com/v4/single/check?key=webhook_cfc4645be15fee286ef751dbf9224a2a&email={{ $('Code in JavaScript1').item.json.Email }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1376,
+        752
+      ],
+      "id": "3805bee3-a373-4b23-aa3b-ffe47e8d13c5",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4",
+          "mode": "list",
+          "cachedResultName": "MFC Website Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-VSuR4sTib2A_wE3nNb5MJocVFqy8Ux5Nkyjt8Mp7y4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Entry Id": "={{ $json[\"Entry Id\"] }}",
+            "AI Status": "={{ $json[\"AI Status\"] }}",
+            "Date": "={{ $json.Date }}",
+            "Page Name": "={{ $json[\"Page Name\"] }}",
+            "Verification": "Null"
+          },
+          "matchingColumns": [
+            "Entry Id"
+          ],
+          "schema": [
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Zip",
+              "displayName": "Zip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Entry Id",
+              "displayName": "Entry Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Page url",
+              "displayName": "Page url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Page Name",
+              "displayName": "Page Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI Status",
+              "displayName": "AI Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Verification",
+              "displayName": "Verification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Status",
+              "displayName": "Email Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        848
+      ],
+      "id": "3a0a2d17-fb07-4933-ab2b-e7e72b5b0113",
+      "name": "Update row in sheet6",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "J9qVnEJx1XzWtg7p",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "spaceId": "spaces/AAQAvyWdHlA",
+        "messageUi": {
+          "text": "=Website Form Submission ({{ $('Code in JavaScript1').item.json['Entry Id'] }}: {{ $('Code in JavaScript1').item.json['AI Status'].toUpperCase() }})\n\n{{ $('Code in JavaScript1').item.json['First Name'] }} {{ $('Code in JavaScript1').item.json['Last Name'] }}\nEmail: {{ $('Code in JavaScript1').item.json['Email'] }} ({{ $('HTTP Request1').item.json.result }})\nPhone: {{ $('Code in JavaScript1').item.json['Phone'] }}\nZip: {{ $('Code in JavaScript1').item.json['Zip'] }}\nService: {{ $('Code in JavaScript1').item.json['Service'] }}\nPage: {{ $('Code in JavaScript1').item.json['Page Name'] }} ({{ $('Code in JavaScript1').item.json['Page url'] ? $('Code in JavaScript1').item.json['Page url'] : 'NA' }})\n\nMessage:\n{{ $('Code in JavaScript1').item.json['Message'] }}"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleChat",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        752
+      ],
+      "id": "5a1e18e4-fc98-48e0-a25d-e28eeb850ca1",
+      "name": "Google Chat2",
+      "webhookId": "bda0c0f8-9bc8-4553-a455-9179468637f2",
+      "credentials": {
+        "googleApi": {
+          "id": "b1BRRFaxjGTpr8CR",
+          "name": "AI Chat"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Chat": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Google Chat2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet6": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Chat2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8e86277a-234c-4c92-bf4f-3fd5c0da42cc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5390913f54f2b3b8c20ba2bc12d5d86923da56b51cae8a83441ce26684a7e6a"
+  },
+  "id": "XgaX0tZD7oiNhrvr",
+  "tags": []
+}
